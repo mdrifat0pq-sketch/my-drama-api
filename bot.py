@@ -29,7 +29,7 @@ def send_welcome(message):
     btn_channel = telebot.types.InlineKeyboardButton(text="📢 Official Channel", url="https://t.me/flixora_official_channel")
     
     # ৩. কন্টাক্ট সাপোর্ট বাটন
-    btn_contact = telebot.types.InlineKeyboardButton(text="💬 Contact Support", url="https://t.me/mdrifat021u")
+    btn_contact = telebot.types.InlineKeyboardButton(text="💬 Contact Support", url="https://t.me/Rifat_f_o")
     
     # সবগুলো বাটন নিচে নিচে (row_width=1) সাজানো হলো
     markup.add(btn_app, btn_channel, btn_contact)
@@ -48,7 +48,7 @@ def send_welcome(message):
         "📢 Join our Official Channel to get all updates & links:\n"
         "👉 https://t.me/flixora_official_channel 👈\n\n"
         "💬 For any inquiries or support, contact us directly:\n"
-        "👉 @mdrifat021u 👈\n\n"
+        "👉 @Rifat_f_o 👈\n\n"
         "🚀 Enjoy ultra-fast streaming with premium 1080p quality.\n\n"
         "👇 Tap the buttons below to start watching and join us!\n\n"
         "𝔓𝔬𝔴𝔢𝔯𝔢𝔡 𝔟𝔶 ℜ𝔦𝔣𝔞𝔱"

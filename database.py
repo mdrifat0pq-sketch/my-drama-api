@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 import config
 
-# MongoDB কানেকশন সেটআপ
+# MongoDB কানেকশন
 client = MongoClient(config.MONGO_URI)
 db = client['cartspy_db']
 users_collection = db['users']
@@ -19,10 +19,11 @@ def get_or_create_user(user_id, username=None):
             "premium_status": False
         }
         users_collection.insert_one(user)
+        return user
     return user
 
-def update_user_profile(user_id, country, language):
-    """ইউজারের দেশ ও ভাষা আপডেট করার জন্য"""
+def update_profile(user_id, country, language):
+    """ইউজারের দেশ ও ভাষা আপডেট করার জন্য (নাম ফিক্স করা হয়েছে)"""
     users_collection.update_one(
         {"user_id": user_id},
         {"$set": {"country": country, "language": language}}
@@ -46,11 +47,9 @@ def check_free_limit(user_id):
     if not user:
         return True
     
-    # যদি ইউজার অলরেডি পেমেন্ট করে স্টার মেম্বার হয়ে থাকে
     if user.get("premium_status", False):
         return True
         
-    # ২ বারের কম সার্চ করলে ফ্রি সুযোগ পাবে
     if user.get("search_count", 0) < 2:
         return True
         
@@ -61,4 +60,4 @@ def make_user_premium(user_id):
     users_collection.update_one(
         {"user_id": user_id},
         {"$set": {"premium_status": True}}
-                       )
+    )

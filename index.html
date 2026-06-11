@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BiliDouyin Player</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            overflow: hidden;
+        }
+
+        /* Mobile Container Setup */
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            height: 100vh;
+            margin: 0 auto;
+            position: relative;
+            background: #000;
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.2);
+        }
+
+        .swiper {
+            width: 100%;
+            height: 100%;
+        }
+
+        .swiper-slide {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+        }
+
+        /* Fullscreen Video styling */
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Video Dark Overlay */
+        .video-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.5) 100%);
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* Right Sidebar Interaction Controls (Douyin Style) */
+        .side-actions {
+            position: absolute;
+            right: 15px;
+            bottom: 120px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #fff;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .action-btn i {
+            width: 45px;
+            height: 45px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            transition: all 0.2s;
+        }
+
+        .action-btn:active i { transform: scale(0.9); }
+        .action-btn.liked i { color: #fe0979; }
+
+        .action-btn span {
+            font-size: 12px;
+            margin-top: 5px;
+            font-weight: 600;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        /* Bottom Info Overlay (Bilibili/Shorts Details) */
+        .bottom-details {
+            position: absolute;
+            bottom: 30px;
+            left: 15px;
+            width: 75%;
+            color: white;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .creator-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .creator-name {
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .platform-badge {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+        .badge-youtube { background: #ff0000; }
+        .badge-douyin { background: #00f2fe; color: #000; }
+        .badge-bilibili { background: #fb7299; }
+
+        .video-title {
+            font-size: 13px;
+            line-height: 1.4;
+            opacity: 0.95;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+        }
+
+        /* Top Bar Navigation Tabs */
+        .top-tabs {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 10;
+        }
+
+        .tab {
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .tab.active {
+            color: #fff;
+            border-bottom: 2px solid #00f2fe;
+        }
+
+        /* Loading Screen Setup */
+        .loading-spinner {
+            position: absolute;
+            font-size: 24px;
+            color: #00f2fe;
+            animation: spin 1s linear infinite;
+            z-index: 1;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <div class="top-tabs">
+            <div class="tab active">For You</div>
+        </div>
+
+        <div class="swiper mySwiper">
+            <div class="swiper-wrapper" id="video-wrapper">
+                </div>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+    <script>
+        // তোর লাইভ ব্যাকএন্ড ইউআরএল সরাসরি বসিয়ে দেওয়া হয়েছে
+        const RENDER_BACKEND_URL = "https://bilidouyin-backend.onrender.com";
+
+        // টেস্ট করার জন্য ৩টা প্ল্যাটফর্মেরই রিয়েল ভিডিও লিংক পুশ করা আছে
+        const videoPlaylist = [
+            "https://www.youtube.com/shorts/tnyV7_4g1bY",
+            "https://www.douyin.com/video/7341234567890123456",
+            "https://www.bilibili.com/video/BV1GJ411x7H1"
+        ];
+
+        const wrapper = document.getElementById('video-wrapper');
+
+        function getBadgeClass(url) {
+            if (url.includes('youtube') || url.includes('youtu.be')) return 'badge-youtube';
+            if (url.includes('douyin')) return 'badge-douyin';
+            if (url.includes('bilibili')) return 'badge-bilibili';
+            return '';
+        }
+
+        async function loadVideos() {
+            for (let i = 0; i < videoPlaylist.length; i++) {
+                const targetUrl = videoPlaylist[i];
+                
+                const slide = document.createElement('div');
+                slide.className = 'swiper-slide';
+                slide.innerHTML = `<div class="loading-spinner"><i class="fa-solid fa-circle-notch"></i></div>`;
+                wrapper.appendChild(slide);
+
+                try {
+                    // লাইভ রেন্ডার সার্ভার থেকে ডিরেক্ট স্ক্র্যাপড নো-ওয়াটারমার্ক ডাটা ফেচ করা
+                    const response = await fetch(`${RENDER_BACKEND_URL}/api/scrape?url=${encodeURIComponent(targetUrl)}`);
+                    const data = await response.json();
+
+                    if (data.status === "success") {
+                        const badgeClass = getBadgeClass(targetUrl);
+                        
+                        slide.innerHTML = `
+                            <div class="video-overlay"></div>
+                            <video src="${data.video_url}" loop playsinline></video>
+                            
+                            <div class="side-actions">
+                                <div class="action-btn" onclick="this.classList.toggle('liked')">
+                                    <i class="fa-solid fa-heart"></i>
+                                    <span>Like</span>
+                                </div>
+                                <div class="action-btn">
+                                    <i class="fa-solid fa-comment"></i>
+                                    <span>Comment</span>
+                                </div>
+                                <a href="${data.video_url}" download target="_blank" class="action-btn">
+                                    <i class="fa-solid fa-arrow-down"></i>
+                                    <span>Save</span>
+                                </a>
+                            </div>
+
+                            <div class="bottom-details">
+                                <div class="creator-info">
+                                    <span class="creator-name">${data.creator || '@creator'}</span>
+                                    <span class="platform-badge ${badgeClass}">${data.platform}</span>
+                                </div>
+                                <div class="video-title">${data.title}</div>
+                            </div>
+                        `;
+
+                        // প্রথম ভিডিও প্লেব্যাক হ্যান্ডলিং
+                        if (i === 0) {
+                            const firstVid = slide.querySelector('video');
+                            if(firstVid) firstVid.play().catch(e => console.log("Auto-play blocked"));
+                        }
+                    } else {
+                        slide.innerHTML = `<div style="color:rgba(255,255,255,0.5); z-index:2; font-size:14px;">Failed to load snippet</div>`;
+                    }
+                } catch (err) {
+                    slide.innerHTML = `<div style="color:rgba(255,255,255,0.5); z-index:2; font-size:14px;">Connecting Engine...</div>`;
+                }
+            }
+
+            // Swiper ইঞ্জিন ইনিশিয়ালাইজেশন
+            const swiper = new Swiper(".mySwiper", {
+                direction: "vertical",
+                slidesPerView: 1,
+                spaceBetween: 0,
+                mousewheel: true,
+                on: {
+                    slideChange: function () {
+                        const videos = document.querySelectorAll('video');
+                        videos.forEach(v => v.pause());
+                        
+                        const activeSlide = this.slides[this.activeIndex];
+                        const activeVideo = activeSlide.querySelector('video');
+                        if (activeVideo) {
+                            activeVideo.currentTime = 0;
+                            activeVideo.play().catch(e => console.log("Playback blocked"));
+                        }
+                    },
+                },
+            });
+        }
+
+        loadVideos();
+    </script>
+</body>
+  </html>

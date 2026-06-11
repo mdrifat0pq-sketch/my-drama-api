@@ -206,14 +206,13 @@
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
     <script>
-        // তোর লাইভ ব্যাকএন্ড ইউআরএল সরাসরি বসিয়ে দেওয়া হয়েছে
+        // তোর লাইভ ব্যাকএন্ড ইউআরএল সরাসরি সেট করা
         const RENDER_BACKEND_URL = "https://bilidouyin-backend.onrender.com";
 
-        // টেস্ট করার জন্য ৩টা প্ল্যাটফর্মেরই রিয়েল ভিডিও লিংক পুশ করা আছে
+        // ১০০% রিয়েল ও এক্টিভ ইউটিউব শর্টস লিংক (টেস্ট করার জন্য)
         const videoPlaylist = [
             "https://www.youtube.com/shorts/tnyV7_4g1bY",
-            "https://www.douyin.com/video/7341234567890123456",
-            "https://www.bilibili.com/video/BV1GJ411x7H1"
+            "https://www.youtube.com/shorts/p4v87_b98X0"
         ];
 
         const wrapper = document.getElementById('video-wrapper');
@@ -235,7 +234,7 @@
                 wrapper.appendChild(slide);
 
                 try {
-                    // লাইভ রেন্ডার সার্ভার থেকে ডিরেক্ট স্ক্র্যাপড নো-ওয়াটারমার্ক ডাটা ফেচ করা
+                    // লাইভ রেন্ডার সার্ভার থেকে ডিরেক্ট স্ক্র্যাপড ডাটা ফেচ করা
                     const response = await fetch(`${RENDER_BACKEND_URL}/api/scrape?url=${encodeURIComponent(targetUrl)}`);
                     const data = await response.json();
 
@@ -276,10 +275,10 @@
                             if(firstVid) firstVid.play().catch(e => console.log("Auto-play blocked"));
                         }
                     } else {
-                        slide.innerHTML = `<div style="color:rgba(255,255,255,0.5); z-index:2; font-size:14px;">Failed to load snippet</div>`;
+                        slide.innerHTML = `<div style="color:rgba(255,255,255,0.6); z-index:2; font-size:14px;">Failed to load snippet</div>`;
                     }
                 } catch (err) {
-                    slide.innerHTML = `<div style="color:rgba(255,255,255,0.5); z-index:2; font-size:14px;">Connecting Engine...</div>`;
+                    slide.innerHTML = `<div style="color:rgba(255,255,255,0.6); z-index:2; font-size:14px;">Connecting Engine...</div>`;
                 }
             }
 
@@ -308,4 +307,4 @@
         loadVideos();
     </script>
 </body>
-  </html>
+</html>
